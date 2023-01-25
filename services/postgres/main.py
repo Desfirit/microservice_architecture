@@ -14,11 +14,16 @@ default_resp = [
 def get_students():
     return default_resp
 
-if __name__ == "__main__":
-    print("Connecting to postgres")
-    postgre = connect_utils.get_postgre()
-    print("Connected to postgres")
+def is_scheme_created(postgre):
+    postgre.execute("SELECT * FROM information_schema.tables WHERE table_name = 'groups';")
+    records = postgre.fetchall()
 
+    if records:
+        return True
+    else:
+        return False
+
+def prepare_database(postgre):
     print("Creating scheme")
     utils.create_scheme(postgre)
     print("Created scheme")
@@ -26,5 +31,15 @@ if __name__ == "__main__":
     #print("Filling database")
     #utils.fill_scheme(postgre)
     #print("Filled databse")
+
+if __name__ == "__main__":
+    print("Connecting to postgres")
+    postgre = connect_utils.get_postgre()
+    print("Connected to postgres")
+
+    if is_scheme_created(postgre):
+        print("Scheme already created. Simple start")
+    else:
+        prepare_database(postgre)
 
     app.run(host="0.0.0.0", port=os.environ["LOCAL_SERVICES_PORT"])
