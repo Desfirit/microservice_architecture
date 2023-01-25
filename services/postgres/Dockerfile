@@ -1,12 +1,10 @@
-FROM python:3.10.9-slim-bullseye
+FROM python:3.10.9-bullseye
 
 WORKDIR /app
 
-RUN pip3 install flask
+COPY requirements.mger ./
 
-RUN apt-get update \
-    && apt-get -y install libpq-dev gcc \
-    && pip3 install psycopg2
+RUN pip3 install -r requirements.mger
 
 COPY . .
 

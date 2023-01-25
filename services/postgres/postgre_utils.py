@@ -9,7 +9,7 @@ TABLE_SCHEDULE = "schedule"
 
 def get_postgre():
     conn = psycopg2.connect(dbname=os.environ["POSTGRE_DBNAME"], user=os.environ["POSTGRE_USER"], 
-                        password=os.environ["POSTGRE_PASS"], host="postgres", connect_timeout=15)
+                        password=os.environ["POSTGRE_PASS"], host="postgres", connect_timeout=30)
 
     conn.autocommit = True
     return conn.cursor()

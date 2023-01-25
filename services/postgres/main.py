@@ -5,9 +5,14 @@ import postgre_create as utils
 
 app = Flask(__name__)
 
+default_resp = [
+    {"id":"19Б0726", "name": "Вася", "surname": "Пупкин", "group_fk" : "БСБО12-111"},
+    {"id":"19Б0226", "name": "Гриша", "surname": "Синьков", "group_fk" : "БИСО-80-2208"},
+]
+
 @app.route("/api/students", methods=["GET"])
 def get_students():
-    return ["students"]
+    return default_resp
 
 if __name__ == "__main__":
     print("Connecting to postgres")
