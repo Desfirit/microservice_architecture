@@ -12,7 +12,7 @@ def try_connect():
     try:
         return psycopg2.connect(dbname=os.environ["POSTGRE_DBNAME"], user=os.environ["POSTGRE_USER"], 
                         password=os.environ["POSTGRE_PASS"], host="postgres", connect_timeout=30)
-    except OperationalError:
+    except Exception:
         return None
 
 def get_postgre():
