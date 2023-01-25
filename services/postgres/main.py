@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 default_resp = [
     {"id":"19Б0726", "name": "Вася", "surname": "Пупкин", "group_fk" : "БСБО12-111"},
-    {"id":"19Б0226", "name": "Гриша", "surname": "Синьков", "group_fk" : "БИСО-80-2208"},
+    {"id":"19Б0226", "name": "Гриша", "surname": "Синьков", "group_fk" : "БИСО-80-2208"}
 ]
 
 @app.route("/api/students", methods=["GET"])
