@@ -6,16 +6,8 @@ import postgre_create as utils
 app = Flask(__name__)
 postgre = None
 
-default_resp = [
-    {"id":"19Б0726", "name": "Вася", "surname": "Пупкин", "group_fk" : "БСБО12-111"},
-    {"id":"19Б0226", "name": "Гриша", "surname": "Синьков", "group_fk" : "БИСО-80-2208"}
-]
-
 @app.route("/api/students", methods=["GET"])
 def get_students():
-    if postgre is None:
-        return default_resp
-
     postgre.execute("SELECT * FROM students")
     students = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
     return students

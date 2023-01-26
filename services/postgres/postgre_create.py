@@ -1,4 +1,5 @@
 import postgre_utils as utils
+from pathlib import Path
 
 import datetime
 import random
@@ -63,15 +64,8 @@ def gen_student_id():
     return "19" + "".join(random.choices(russianLetters, k=2)) + "".join(random.choices(nums, k=4))
 
 def generate_data():
-    file_names = open("data_dictionary/names.txt", encoding="utf-8")
-    names = file_names.readlines()
-    file_names.close()
-
-    file_surnames = open("data_dictionary/surnames.txt", encoding="utf-8")
-    surnames = file_surnames.readlines()
-    file_surnames.close()
-
-    print(surnames[45])
+    names = Path("data_dictionary/names.txt").read_text().splitlines()
+    surnames = Path("data_dictionary/surnames.txt").read_text().splitlines()
 
     namesLen = len(names)
     surnamesLen = len(surnames)
