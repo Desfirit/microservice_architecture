@@ -18,8 +18,13 @@ def get_students():
 
     postgre.execute("SELECT * FROM students")
     students = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
-    print(students)
     return students
+
+@app.route("/api/groups", methods=["GET"])
+def get_groups():
+    postgre.execute("SELECT * FROM groups")
+    groups = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
+    return groups
 
 def is_scheme_created(postgre):
     postgre.execute("SELECT * FROM information_schema.tables WHERE table_name = 'groups';")

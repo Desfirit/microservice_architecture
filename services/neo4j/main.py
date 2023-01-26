@@ -1,13 +1,19 @@
 from flask import Flask, request, jsonify, redirect, render_template
 from neo4j import GraphDatabase
+import urllib.request
 import csv
 import logging
 import sys
+import time
+import os
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.DEBUG)
 logging.getLogger("neo4j").addHandler(handler)
 logging.getLogger("neo4j").setLevel(logging.DEBUG)
+
+time.sleep(10)
+
 # uri = "neo4j:22808"
 # driver = GraphDatabase.driver(uri, auth=("neo4j", "neo4j"))
 # session = driver.session()
@@ -35,7 +41,14 @@ class Neo4jConnection:
                 session.close()
         return response
 
+req = urllib.request.Request(f"http://postgres-ma:{os.environ['LOCAL_SERVICES_PORT']}/api/students")
+with urllib.request.urlopen(req) as response:
+   the_page = response.read()
+   print(the_page)
 
-conn = Neo4jConnection(uri="neo4j:7687", user="neo4j", password="qwerty123")
+conn = Neo4jConnection(uri="neo4j:7687", user=os.environ["NEO4J_USER"], password=os.environ["NEO4J_PASS"])
+
+print("Succesfully connected to neo4j")
+
 conn.query("CREATE OR REPLACE DATABASE graphDb")
 conn.query("SHOW DATABASE")
