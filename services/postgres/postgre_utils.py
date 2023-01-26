@@ -25,3 +25,18 @@ def get_postgre():
         
     conn.autocommit = True
     return conn.cursor()
+
+def get_students(postgre):
+    postgre.execute("SELECT * FROM students")
+    students = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
+    return students
+
+def get_groups(postgre):
+    postgre.execute("SELECT * FROM groups")
+    groups = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
+    return groups
+
+def get_schedule(postgre):
+    postgre.execute("SELECT * FROM schedule")
+    schedule = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
+    return schedule

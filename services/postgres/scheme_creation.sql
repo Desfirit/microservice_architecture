@@ -24,10 +24,10 @@ CREATE TABLE lessons
 
 CREATE TABLE schedule(
     id SERIAL,
-	groups_fk VARCHAR(12) REFERENCES groups (id) NOT NULL,
-	lessons_fk INT REFERENCES lessons (id) NOT NULL,
-	lesson_time TIMESTAMP NOT NULL
-) PARTITION BY RANGE (lesson_time);
+	group_fk VARCHAR(12) REFERENCES groups (id) NOT NULL,
+	lesson_fk INT REFERENCES lessons (id) NOT NULL,
+	time TIMESTAMP NOT NULL
+) PARTITION BY RANGE (time);
 
 CREATE TABLE schedule_2019week1 PARTITION OF schedule
     FOR VALUES FROM ('2019-01-01') TO ('2019-01-06');
