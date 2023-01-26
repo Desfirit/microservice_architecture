@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, redirect, render_template
-from py2neo import Node, Relationship, Graph, Path, Subgraph
+from neo4j import GraphDatabase, Graph
 import urllib.request
+import csv
 import logging
 import sys
 import time
@@ -13,7 +14,6 @@ logging.getLogger("neo4j").addHandler(handler)
 logging.getLogger("neo4j").setLevel(logging.DEBUG)
 
 time.sleep(10)
-
 
 # uri = "neo4j:22808"
 # driver = GraphDatabase.driver(uri, auth=("neo4j", "neo4j"))
@@ -38,19 +38,6 @@ class Neo4jConnection:
         return response
 
 
-class Student:
-    course_name = None
-    student_id = None
-    group_id = None
-    speciality_id = None
-    departament_name = None
-
-
-class Lesson:
-    lesson_id = None
-    lesson_desctiption = None
-
-
 students = []
 req = urllib.request.Request(f"http://postgres-ma:{os.environ['LOCAL_SERVICES_PORT']}/api/students")
 with urllib.request.urlopen(req) as response:
@@ -73,11 +60,8 @@ with urllib.request.urlopen(req) as response:
             if student["group_id"] == obj['id']:
                 student["speciality_id"] = obj['speciality_fk']
 
-print(students)
-# conn = Neo4jConnection(uri="neo4j://localhost:7687", user=os.environ["NEO4J_USER"], password=os.environ["NEO4J_PASS"])
-# cypher_ = "CREATE (n:Student)"
-# graph.run(cypher_)
-# print("Succesfully connected to neo4j")
-#
-# conn.query("CREATE OR REPLACE DATABASE graphDb")
-# conn.query("SHOW DATABASE")
+# print(students)
+greeter = Neo4jConnection("http://neo4j:7687/", user=os.environ["NEO4J_USER"], password=os.environ["NEO4J_PASS"])
+
+print("Succesfully connected to neo4j")
+
