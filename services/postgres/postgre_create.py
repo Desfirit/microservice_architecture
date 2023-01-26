@@ -55,8 +55,8 @@ DAY_DELTA = datetime.timedelta(days=1)
 WEEKS_TO_FILL = 32
 
 STUDENTS = []
-GROUPS = ['БСБО-01-19', 'БСБО-02-19', 'БСБО-03-19', 'БИСО-01-20', 'БИСО-02-20', 'БИСО-03-20', 'БИСО-06-20', 'БИСО-01-19']
-LESSONS = ['Математика', "Вышивание", "Программирование", "Философия", "Микроархитектура систем"]
+GROUPS = ['МГЕР-02-28', 'МГЕР-03-19', 'МГЕР-01-19', 'БСБО-01-19', 'БСБО-02-19', 'ПЕРН-30-20' , 'БСБО-03-19', 'БИСО-01-20', 'БИСО-02-20', 'БИСО-03-20', 'БИСО-06-20', 'БИСО-01-19']
+LESSONS = ['Математика', "Вышивание", "Программирование", "Философия", "Микроархитектура систем", "Глиномество", "Дудосинг", "Флекс"]
 
 def gen_student_id():
     russianLetters = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЫЭЮЯ"
@@ -140,7 +140,7 @@ def fill_scheme(postgre):
         insert_student(postgre, student["id"], student["name"], student["surname"], student["group"])
 
     for indxLes, lesson in enumerate(LESSONS):
-        insert_lesson(postgre, lesson, "Лекция", indxLes)
+        insert_lesson(postgre, lesson, "Лекция" if shood_add(0.5) else "Практика", indxLes)
     
     #Filling schedule
     for group in GROUPS:
@@ -153,13 +153,3 @@ def fill_scheme(postgre):
     schedule = utils.get_schedule(postgre)
     for mg in schedule:
         fill_visits(postgre, mg)
-
-
-    
-
-if __name__ == "__main__":
-    postgre = utils.get_postgre()
-
-    create_scheme(postgre)
-
-    fill_scheme(postgre)

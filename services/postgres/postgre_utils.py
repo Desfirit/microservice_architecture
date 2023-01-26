@@ -40,3 +40,19 @@ def get_schedule(postgre):
     postgre.execute("SELECT * FROM schedule")
     schedule = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
     return schedule
+
+def get_lessons(postgre):
+    postgre.execute("SELECT * FROM lessons")
+    lessons = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
+    return lessons
+
+def find_worst_students(postgre, lections, start_date, end_date):
+    postgre.execute(f"SELECT student_fk AS id, CAST(COUNT(CASE visited WHEN true THEN 1 ELSE NULL END) AS FLOAT) / COUNT(*) AS visit_percent \
+                      FROM visits JOIN schedule ON visits.schedule_fk = schedule.id \
+                      WHERE schedule.lesson_fk IN {lections} AND schedule.time BETWEEN '{start_date}' AND '{end_date}' \
+                      GROUP BY student_fk \
+                      ORDER BY visit_percent \
+                      LIMIT 10;")
+
+    students = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
+    return students

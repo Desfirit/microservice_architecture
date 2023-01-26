@@ -26,7 +26,25 @@ Api доступно по адресу `redis-ma:22808/api/students`.
 Пример: `http://redis-ma:22808/api/students?students=19ПЫ8781,19ЧТ8208`, `http://redis-ma:22808/api/students?students=19ПЫ8781`
 
 ## postgres-ma:
-Функционал: предоставляет информацию о всех студентах и группах  
-Api доступно по адресу `postgres-ma:22808/api/students` и `postgres-ma:22808/api/groups`.  
+1. `postgres-ma:22808/api/students`  
+Функционал: предоставляет информацию о всех студентах
 Параметры не нужны  
-Пример: `http://postgres-ma:22808/api/students`, `http://postgres-ma:22808/api/groups`  
+Пример: `http://postgres-ma:22808/api/students`
+
+2. `postgres-ma:22808/api/groups`  
+Функционал: предоставляет информацию о всех студентах
+Параметры не нужны  
+Пример: `http://postgres-ma:22808/api/groups`  
+
+3. `postgres-ma:22808/api/students?lessons=<id>... ,<id>from=<date>&until=<date>`  
+Функционал: Выдает 10 худших студентов по посещаемости предметов за период
+Параметры: 
+1. id - int
+2. date - "%d-%m-%Y"
+Возвращаемый формат: [{"id" : int, "visit_percent": float} ... ]
+Пример: `http://postgres-ma:22808/api/students?lessons=2,3,4&from=02-04-2019&until=04-09-2019`  
+
+4. `postgres-ma:22808/api/lessons`  
+Функционал: предоставляет информацию о всех предметах
+Параметры не нужны  
+Пример: `http://postgres-ma:22808/api/lessons`  
