@@ -23,10 +23,12 @@
 Функционал: предоставляет информацию о студентах по id  
 Api доступно по адресу `redis-ma:22808/api/students`.  
 Список параметров: `/api/students/students=<id1>... ,<id2>`  
-Пример: `redis-ma:22808/api/students?students=19ПЫ8781,19ЧТ8208`, `redis-ma:22808/api/students?students=19ПЫ8781`
+Пример: `http://redis-ma:22808/api/students?students=19ПЫ8781,19ЧТ8208`, `http://redis-ma:22808/api/students?students=19ПЫ8781`
 
 ## postgres-ma:
-Функционал: предоставляет информацию о всех студентах  
+Функционал: предоставляет информацию о всех студентах и группах
 Api доступно по адресу `postgres-ma:22808/api/students`.  
+Api доступно по адресу `postgres-ma:22808/api/groups`.  
 Параметры не нужны  
-Пример: `postgres-ma:22808/api/students`  
+Пример: `http://postgres-ma:22808/api/students`  
+Пример: `http://postgres-ma:22808/api/groups`  
