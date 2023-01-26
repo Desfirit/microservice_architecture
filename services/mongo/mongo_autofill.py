@@ -407,15 +407,15 @@ def parse_inst(inst):
 	institutes.insert_one(current_inst)
 
 	# fill department
-	for kaf in inst['department']:
-		current_kaf = copy.deepcopy(kaf)
-		current_kaf['prepod_count'] = random.randint(15, 40);
-		for el in current_kaf['specs']:
+	for dep in inst['department']:
+		current_dep = copy.deepcopy(dep)
+		current_dep['prepod_count'] = random.randint(15, 40);
+		for el in current_dep['specs']:
 			del el['courses']
-		cafedras.insert_one(current_kaf)
+		department.insert_one(current_kaf)
 
 		# fill specialization
-		for spec in kaf['specs']:
+		for spec in dep['specs']:
 			current_spec = copy.deepcopy(spec)
 			specs.insert_one(current_spec)
 			for course in spec['courses']:
@@ -430,5 +430,5 @@ def create_scheme(mongo):
 	parse_inst(inst1)
 	parse_inst(inst2)
 	parse_inst(inst3)
-	for course in courses:
-		mongo_courses.insert_one(create_info_about_course(course))
+	#for course in courses:
+	#	mongo_courses.insert_one(create_info_about_course(course))
