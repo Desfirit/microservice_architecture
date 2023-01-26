@@ -1,7 +1,13 @@
 from flask import Flask, request, jsonify, redirect, render_template
 from neo4j import GraphDatabase
 import csv
+import logging
+import sys
 
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+logging.getLogger("neo4j").addHandler(handler)
+logging.getLogger("neo4j").setLevel(logging.DEBUG)
 # uri = "neo4j:22808"
 # driver = GraphDatabase.driver(uri, auth=("neo4j", "neo4j"))
 # session = driver.session()
@@ -30,6 +36,6 @@ class Neo4jConnection:
         return response
 
 
-conn = Neo4jConnection(uri="neo4j:7687", user="superman", password="pizza")
+conn = Neo4jConnection(uri="neo4j:7687", user="neo4j", password="qwerty123")
 conn.query("CREATE OR REPLACE DATABASE graphDb")
 conn.query("SHOW DATABASE")
