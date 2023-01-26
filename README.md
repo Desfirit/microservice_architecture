@@ -26,9 +26,8 @@ Api доступно по адресу `redis-ma:22808/api/students`.
 Пример: `http://redis-ma:22808/api/students?students=19ПЫ8781,19ЧТ8208`, `http://redis-ma:22808/api/students?students=19ПЫ8781`
 
 ## postgres-ma:
-Функционал: предоставляет информацию о всех студентах и группах
+Функционал: предоставляет информацию о всех студентах и группах  
 Api доступно по адресу `postgres-ma:22808/api/students`.  
 Api доступно по адресу `postgres-ma:22808/api/groups`.  
 Параметры не нужны  
-Пример: `http://postgres-ma:22808/api/students`  
-Пример: `http://postgres-ma:22808/api/groups`  
+Пример: `http://postgres-ma:22808/api/students`, `http://postgres-ma:22808/api/groups`  
