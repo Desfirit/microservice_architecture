@@ -89,9 +89,6 @@ def shood_add():
 def insert_group(psql, indx, group):
     return psql.execute(f"INSERT INTO {utils.TABLE_GROUPS}(id, speciality_fk) VALUES ('{group}', '{indx}');")
 
-    #for student in filter(lambda stud: stud["group"] == group, STUDENTS):
-    #    insert_student(psql, student["id"], student["name"], student["surname"], student["group"])
-
 def insert_student(psql, studentId, studentName, studentSurname, group):
     return psql.execute(f"INSERT INTO {utils.TABLE_STUDENTS}(id, name, surname, group_fk) VALUES ('{studentId}', '{studentName}', '{studentSurname}', '{group}');")
 
