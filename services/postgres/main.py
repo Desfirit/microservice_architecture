@@ -47,6 +47,10 @@ def get_groups():
 def get_lessons():
     return utils.get_lessons(postgre)
 
+@app.route("/api/courses", methods=["GET"])
+def get_courses():
+    return utils.get_courses(postgre)
+
 def is_scheme_created(postgre):
     postgre.execute("SELECT * FROM information_schema.tables WHERE table_name = 'groups';")
     records = postgre.fetchall()
