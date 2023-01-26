@@ -47,9 +47,9 @@ def get_lessons(postgre):
     return lessons
 
 def get_courses(postgre):
-    postgre.execute("SELECT group_fk, lesson_fk FROM schedule GROUP BY group_fk, lesson_fk;")
-    schedule = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
-    return schedule
+    postgre.execute("SELECT group_fk, course_fk FROM schedule JOIN lessons ON schedule.lesson_fk = lessons.id GROUP BY group_fk, course_fk;")
+    courses = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
+    return courses
 
 def find_worst_students(postgre, lections, start_date, end_date):
     postgre.execute(f"SELECT student_fk AS id, CAST(COUNT(CASE visited WHEN true THEN 1 ELSE NULL END) AS FLOAT) / COUNT(*) AS visit_percent \
