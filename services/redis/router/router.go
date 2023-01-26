@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"redis/domain"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/redis/go-redis/v9"
@@ -21,7 +22,7 @@ func NewRouter(rdb *redis.Client) *chi.Mux {
 
 func getStudents(rdb *redis.Client) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		students := r.URL.Query()["students"]
+		students := r.URL.Query().Get("students")
 
 		if len(students) == 0 {
 			w.WriteHeader(400)
@@ -35,7 +36,7 @@ func getStudents(rdb *redis.Client) func(w http.ResponseWriter, r *http.Request)
 		var studentTemplate domain.Student
 		studentList := []domain.Student{}
 
-		for _, studentId := range students {
+		for _, studentId := range strings.Split(students, ",") {
 			student := rdb.Get(ctx, studentId)
 
 			err := student.Err()
