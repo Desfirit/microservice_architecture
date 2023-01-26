@@ -24,7 +24,7 @@ def create_table_lessons(psql):
     return psql.execute(f"CREATE TABLE {utils.TABLE_LESSONS} (id SERIAL PRIMARY KEY, type lesson_type NOT NULL, course_fk INT NOT NULL, description_fk VARCHAR(50) NOT NULL );")
 
 def create_table_schedule(psql):
-    return psql.execute(f"CREATE TABLE {utils.TABLE_SCHEDULE}(id SERIAL, groups_fk VARCHAR(12) REFERENCES {utils.TABLE_GROUPS} (id) NOT NULL, lessons_fk INT REFERENCES {utils.TABLE_LESSONS} (id) NOT NULL, lesson_time TIMESTAMP NOT NULL ) PARTITION BY RANGE (lesson_time);")
+    return psql.execute(f"CREATE TABLE {utils.TABLE_SCHEDULE}(id SERIAL, group_fk VARCHAR(12) REFERENCES {utils.TABLE_GROUPS} (id) NOT NULL, lesson_fk INT REFERENCES {utils.TABLE_LESSONS} (id) NOT NULL, time TIMESTAMP NOT NULL ) PARTITION BY RANGE (time);")
 
 def create_table_schedule_partition(psql, partitonName, timeFrom, timeTo):
     return psql.execute(f"CREATE TABLE {partitonName} PARTITION OF {utils.TABLE_SCHEDULE} FOR VALUES FROM ('{timeFrom}') TO ('{timeTo}');")
@@ -39,21 +39,21 @@ def create_scheme(postgre):
     create_table_schedule(postgre)
 
     currentWeek = START_SEMESTER_WEEK
-    for week in range(1, 17):
+    for week in range(1, WEEKS_TO_FILL+1):
         partitionTableName = utils.TABLE_SCHEDULE + str(currentWeek.year) + "week" + str(week)
         weekEnd = currentWeek + WEEK_DELTA
 
         create_table_schedule_partition(postgre, partitionTableName, currentWeek.strftime("%Y-%m-%d"), weekEnd.strftime("%Y-%m-%d"))
 
-        currentWeek = weekEnd + datetime.timedelta(days=1)
+        currentWeek = weekEnd
 
     create_table_visits(postgre)
 
 START_SEMESTER_WEEK = datetime.datetime(2019, 2, 4)
 WEEK_DELTA = datetime.timedelta(weeks=1)
+DAY_DELTA = datetime.timedelta(days=1)
+WEEKS_TO_FILL = 32
 
-#NAMES = ['Вася', 'Гриша', 'Петя', 'Родион', 'Саня', 'Макс', 'Влад', 'Вадим']
-#SURNAMES = []
 STUDENTS = []
 GROUPS = ['БСБО-01-19', 'БСБО-02-19', 'БСБО-03-19', 'БИСО-01-20', 'БИСО-02-20', 'БИСО-03-20', 'БИСО-06-20', 'БИСО-01-19']
 LESSONS = ['Математика', "Вышивание", "Программирование", "Философия", "Микроархитектура систем"]
@@ -77,8 +77,11 @@ def generate_data():
             STUDENTS.append(student)
 
 
-def shood_add():
+def shood_add_group():
     return random.random() < 0.8
+
+def shood_add(prob):
+    return random.random() < prob
 
 def insert_group(psql, indx, group):
     return psql.execute(f"INSERT INTO {utils.TABLE_GROUPS}(id, speciality_fk) VALUES ('{group}', '{indx}');")
@@ -90,28 +93,44 @@ def insert_lesson(psql, name, type, courseId):
     return psql.execute(f"INSERT INTO {utils.TABLE_LESSONS}(description_fk, type, course_fk) VALUES ('{name}', '{type}', {courseId});")
 
 def insert_schedule(psql, group, lesson, time):
-    return psql.execute(f"INSERT INTO {utils.TABLE_SCHEDULE} VALUES({group}, {lesson}, '{time}');")
+    return psql.execute(f"INSERT INTO {utils.TABLE_SCHEDULE}(group_fk, lesson_fk, time) VALUES('{group}', {lesson}, '{time}');")
 
-def fill_schedule(psql, lesson, group):
-    lessonWeekDay = random.randint(0, 5)
-    lessonHourDay = random.randint(9, 18)
+def insert_visit(psql, schedule_fk, student, visited):
+    return psql.execute(f"INSERT INTO {utils.TABLE_VISITS}(schedule_fk, student_fk, visited) VALUES('{schedule_fk}', '{student}', {visited});")
 
-    #lessonPerWeek = 1
+def fill_day(psql, day, group, lessons):
+    lessonsTime = [datetime.timedelta(hours=9), datetime.timedelta(hours=10.5), datetime.timedelta(hours=12.5), datetime.timedelta(hours=14, minutes=20), datetime.timedelta(hours=16, minutes=20), datetime.timedelta(hours=18)]
+    for lessonTime in lessonsTime:
+        if not shood_add(0.4):
+            continue
 
-    lessonTime = datetime.timedelta(days=lessonWeekDay, hours=lessonHourDay)
+        lesson = random.choice(lessons)
 
+        insert_schedule(psql, group, lesson, day + lessonTime)
+
+def fill_week(psql, week, group, lessons):
+    currentDay = week
+
+    for i in range(6):
+        fill_day(psql, currentDay, group, lessons)
+        currentDay += DAY_DELTA
+
+def fill_schedule(psql, group):
     currentWeek = START_SEMESTER_WEEK
-    for week in range(16):
-        currentWeek 
 
-        currentWeek = currentWeek + WEEK_DELTA
+    for i in range(WEEKS_TO_FILL):
+        #lessons = random.choices(LESSONS, k=5)
+        lessons = random.choices(range(1, len(LESSONS)+1), k=3)
+        fill_week(psql, currentWeek, group, lessons)
+
+        currentWeek += WEEK_DELTA
+
+def fill_visits(psql, schedl):
+    for student in filter(lambda student: student["group"] == schedl["group_fk"], STUDENTS):
+        insert_visit(psql, schedl["id"], student["id"], shood_add(0.8))
+
 
 def fill_scheme(postgre):
-    # Сначала создается предмет,
-    # К нему создаются группы,
-    # К группам студенты
-    # Урок добавляется в расписание и к нему группа по расписанию на весь семестр
-
     generate_data()
 
     for indxGroup, group in enumerate(GROUPS):
@@ -122,11 +141,21 @@ def fill_scheme(postgre):
 
     for indxLes, lesson in enumerate(LESSONS):
         insert_lesson(postgre, lesson, "Лекция", indxLes)
-        for indxGroup, group in enumerate(GROUPS):
-            if not shood_add():
-                continue    
+    
+    #Filling schedule
+    for group in GROUPS:
+        if not shood_add(0.3):
+            continue    
 
-            #fill_schedule(postgre, indxLes, indxGroup)
+        fill_schedule(postgre, group)
+
+    #Filling visits
+    schedule = utils.get_schedule(postgre)
+    for mg in schedule:
+        fill_visits(postgre, mg)
+
+
+    
 
 if __name__ == "__main__":
     postgre = utils.get_postgre()
