@@ -328,7 +328,7 @@ inst3 = {
 			"name": "БК-335",
 			"specs": [
 				{"name": "11.03.03"}
-			]
+			],
 
 			"courses": [
 				{"name": "Разработка конструкторской и технологической документации"},
@@ -346,7 +346,7 @@ inst3 = {
 			"name": "БК-338",
 			"specs": [
 				{"name": "11.03.02"}
-			]
+			],
 			"courses": [
 				{"name": "Цифровые технологии телепроизводства"},
 				{"name": "Цифровые радиотрансиверы и медиаконверторы"},
@@ -393,42 +393,41 @@ inst3 = {
 	]
 }
 
-
 def create_info_about_course(name):
 	return {'name': name, 'fullInfo': 'Полная информация о курсе ' + name}
 
 courses = []
 
-def parse_inst(inst):
+def parse_inst(inst, institutes, department, specs):
 	# fill institute
 	current_inst = copy.deepcopy(inst)
-	for el in current_inst['department']:
-		del el['specs']
+	#for el in current_inst['department']:
+		#del el['specs']
 	institutes.insert_one(current_inst)
 
 	# fill department
 	for dep in inst['department']:
 		current_dep = copy.deepcopy(dep)
 		current_dep['prepod_count'] = random.randint(15, 40);
-		for el in current_dep['specs']:
-			del el['courses']
-		department.insert_one(current_kaf)
+		department.insert_one(current_dep)
 
 		# fill specialization
 		for spec in dep['specs']:
 			current_spec = copy.deepcopy(spec)
 			specs.insert_one(current_spec)
-			for course in spec['courses']:
-				if course['name'] not in courses:
-					courses.append(course['name'])
+
+		# fill courses
+		for course in dep['courses']:
+			if course['name'] not in courses:
+				courses.append(course['name'])
 
 def create_scheme(mongo):
 	institutes = mongo['institutes']
 	department = mongo['department']
 	specs = mongo['specializaties']
-	mongo_courses = mongo['courses']
-	parse_inst(inst1)
-	parse_inst(inst2)
-	parse_inst(inst3)
+	courses = mongo['courses']
+	parse_inst(inst1, institutes, department, specs, courses)
+	parse_inst(inst2, institutes, department, specs, courses)
+	parse_inst(inst3, institutes, department, specs, courses)
 	#for course in courses:
-	#	mongo_courses.insert_one(create_info_about_course(course))
+		#mongo_courses.insert_one(create_info_about_course(course))

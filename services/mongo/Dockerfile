@@ -4,10 +4,10 @@ WORKDIR /app
 
 #RUN apt-get update && apt-get -y install libpq-dev gcc
 
-#COPY data_dictionary ./
-#COPY requirements.mger ./
+COPY data ./
+COPY requirements.mger ./
 
-#RUN pip3 install -r requirements.mger
+RUN pip3 install -r requirements.mger
 
 COPY . .
 
