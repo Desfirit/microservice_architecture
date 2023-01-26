@@ -3,9 +3,6 @@ import postgre_utils as utils
 import datetime
 import random
 
-START_SEMESTER_WEEK = datetime.datetime(2019, 2, 4)
-WEEK_DELTA = datetime.timedelta(weeks=1)
-
 def get_string_from_date(date):
     return date.strftime("%Y-%m-%d")
 
@@ -23,7 +20,7 @@ def create_table_students(psql):
 
 def create_table_lessons(psql):
     psql.execute(f"CREATE TYPE lesson_type AS ENUM ('Практика', 'Лекция');")
-    return psql.execute(f"CREATE TABLE {utils.TABLE_LESSONS} (id SERIAL PRIMARY KEY, type lesson_type NOT NULL, cource_fk INT NOT NULL, description_fk VARCHAR(50) NOT NULL );")
+    return psql.execute(f"CREATE TABLE {utils.TABLE_LESSONS} (id SERIAL PRIMARY KEY, type lesson_type NOT NULL, course_fk INT NOT NULL, description_fk VARCHAR(50) NOT NULL );")
 
 def create_table_schedule(psql):
     return psql.execute(f"CREATE TABLE {utils.TABLE_SCHEDULE}(id SERIAL, groups_fk VARCHAR(12) REFERENCES {utils.TABLE_GROUPS} (id) NOT NULL, lessons_fk INT REFERENCES {utils.TABLE_LESSONS} (id) NOT NULL, lesson_time TIMESTAMP NOT NULL ) PARTITION BY RANGE (lesson_time);")
@@ -51,22 +48,55 @@ def create_scheme(postgre):
 
     create_table_visits(postgre)
 
-NAMES = ['Вася', 'Гриша', 'Петя', 'Родион', 'Саня', 'Макс', 'Влад', 'Вадим']
-GROUPS = ['БСБО-01-19', 'БСБО-02-19', 'БСБО-03-19', 'БИСО-01-20', 'БИСО-02-20', 'БИСО-03-20', 'БИСО-03-20', 'БИСО-01-19']
+START_SEMESTER_WEEK = datetime.datetime(2019, 2, 4)
+WEEK_DELTA = datetime.timedelta(weeks=1)
+
+#NAMES = ['Вася', 'Гриша', 'Петя', 'Родион', 'Саня', 'Макс', 'Влад', 'Вадим']
+#SURNAMES = []
+STUDENTS = []
+GROUPS = ['БСБО-01-19', 'БСБО-02-19', 'БСБО-03-19', 'БИСО-01-20', 'БИСО-02-20', 'БИСО-03-20', 'БИСО-06-20', 'БИСО-01-19']
 LESSONS = ['Математика', "Вышивание", "Программирование", "Философия", "Микроархитектура систем"]
+
+def gen_student_id():
+    russianLetters = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЫЭЮЯ"
+    nums = "1234567890"
+    return "19" + "".join(random.choices(russianLetters, k=2)) + "".join(random.choices(nums, k=4))
+
+def generate_data():
+    file_names = open("data_dictionary/names.txt", encoding="utf-8")
+    names = file_names.readlines()
+    file_names.close()
+
+    file_surnames = open("data_dictionary/surnames.txt", encoding="utf-8")
+    surnames = file_surnames.readlines()
+    file_surnames.close()
+
+    print(surnames[45])
+
+    namesLen = len(names)
+    surnamesLen = len(surnames)
+
+    for indxGroup, group in enumerate(GROUPS):
+        for i in range(random.randint(20,30)):
+            studentId = gen_student_id()
+            student = {"id" : studentId, "name" : names[random.randint(0, namesLen-1)], "surname": surnames[random.randint(0, surnamesLen-1)], "group": group}
+            STUDENTS.append(student)
+
 
 def shood_add():
     return random.random() < 0.8
 
 def insert_group(psql, indx, group):
-    return psql.execute(f"INSERT INTO {utils.TABLE_GROUPS}(id, name) VALUES ({id}, '{group}');")
+    return psql.execute(f"INSERT INTO {utils.TABLE_GROUPS}(id, speciality_fk) VALUES ('{group}', '{indx}');")
 
-def insert_student(psql, student, group):
-    #return psql.execute(f"INSERT INTO {utils.TABLE_GROUPS}(name) VALUES ('{group}');")
-    pass
+    #for student in filter(lambda stud: stud["group"] == group, STUDENTS):
+    #    insert_student(psql, student["id"], student["name"], student["surname"], student["group"])
 
-def insert_lesson(psql, lesson):
-    return psql.execute(f"INSERT INTO {utils.TABLE_LESSONS}(id, name) VALUES ({id}, '{lesson}');")
+def insert_student(psql, studentId, studentName, studentSurname, group):
+    return psql.execute(f"INSERT INTO {utils.TABLE_STUDENTS}(id, name, surname, group_fk) VALUES ('{studentId}', '{studentName}', '{studentSurname}', '{group}');")
+
+def insert_lesson(psql, name, type, courseId):
+    return psql.execute(f"INSERT INTO {utils.TABLE_LESSONS}(description_fk, type, course_fk) VALUES ('{name}', '{type}', {courseId});")
 
 def insert_schedule(psql, group, lesson, time):
     return psql.execute(f"INSERT INTO {utils.TABLE_SCHEDULE} VALUES({group}, {lesson}, '{time}');")
@@ -85,24 +115,27 @@ def fill_schedule(psql, lesson, group):
 
         currentWeek = currentWeek + WEEK_DELTA
 
-
 def fill_scheme(postgre):
-    # Сначала создается предмет, 
+    # Сначала создается предмет,
     # К нему создаются группы,
     # К группам студенты
     # Урок добавляется в расписание и к нему группа по расписанию на весь семестр
 
+    generate_data()
+
+    for indxGroup, group in enumerate(GROUPS):
+        insert_group(postgre, indxGroup, group)
+
+    for student in STUDENTS:
+        insert_student(postgre, student["id"], student["name"], student["surname"], student["group"])
+
     for indxLes, lesson in enumerate(LESSONS):
-        insert_lesson(postgre, indxLes, lesson)
+        insert_lesson(postgre, lesson, "Лекция", indxLes)
         for indxGroup, group in enumerate(GROUPS):
             if not shood_add():
-                continue
+                continue    
 
-            insert_group(postgre, indxGroup, group)
-
-            fill_schedule(postgre, indxLes, indxGroup)
-            
-        
+            #fill_schedule(postgre, indxLes, indxGroup)
 
 if __name__ == "__main__":
     postgre = utils.get_postgre()

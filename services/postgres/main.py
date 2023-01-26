@@ -1,9 +1,10 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 import postgre_utils as connect_utils
 import postgre_create as utils
 
 app = Flask(__name__)
+postgre = None
 
 default_resp = [
     {"id":"19Б0726", "name": "Вася", "surname": "Пупкин", "group_fk" : "БСБО12-111"},
@@ -12,7 +13,13 @@ default_resp = [
 
 @app.route("/api/students", methods=["GET"])
 def get_students():
-    return default_resp
+    if postgre is None:
+        return default_resp
+
+    postgre.execute("SELECT * FROM students")
+    students = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
+    print(students)
+    return students
 
 def is_scheme_created(postgre):
     postgre.execute("SELECT * FROM information_schema.tables WHERE table_name = 'groups';")
@@ -28,9 +35,9 @@ def prepare_database(postgre):
     utils.create_scheme(postgre)
     print("Created scheme")
 
-    #print("Filling database")
-    #utils.fill_scheme(postgre)
-    #print("Filled databse")
+    print("Filling database")
+    utils.fill_scheme(postgre)
+    print("Filled databse")
 
 if __name__ == "__main__":
     print("Connecting to postgres")

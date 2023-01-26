@@ -16,7 +16,6 @@ def try_connect():
         return None
 
 def get_postgre():
-
     for trying in range(10):
         conn = try_connect()
         if conn is not None:
@@ -24,6 +23,5 @@ def get_postgre():
 
         time.sleep(0.5)
         
-
     conn.autocommit = True
     return conn.cursor()
