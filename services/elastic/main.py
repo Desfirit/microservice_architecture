@@ -72,7 +72,7 @@ def get_lessons():
     if not keyword:
         app.logger.info(f"keyword = {keyword}")
         body = {'query':{"match_all": {}}}
-        res= elastic.search(index='lesson_descriptions', body=json.dumps(body))
+        res= elastic.search(index='lesson_descriptions', filter_path=['hits.hits._source'], body=json.dumps(body))
         all_hits = res['hits']['hits']
         for num, doc in enumerate(all_hits):
             for value in doc.values():
@@ -89,7 +89,7 @@ def get_lessons():
     }}
     app.logger.info(json.dumps(body, ensure_ascii=False))
     
-    res = elastic.search(index="lesson_descriptions", body=json.dumps(body, ensure_ascii=False))
+    res = elastic.search(index="lesson_descriptions", filter_path=['hits.hits._source'], body=json.dumps(body, ensure_ascii=False))
 
     final_data = []
     all_hits = res['hits']['hits']
