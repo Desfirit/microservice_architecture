@@ -23,22 +23,14 @@ mongo = None
 @app.route("/api/all", methods=["GET"])
 def get_all():
     res = utils.get_all(mongo)
-
-    response = []
-    for inst in res:
-        del inst["_id"]
-        response.append(inst)
-        
-    return response
+    return res
 
 @app.route("/api/courses", methods=["GET"])
 def get_courses():
-    app.logger.info("Recieved courses request")
     return utils.get_courses(mongo)
 
 @app.route("/api/specialities", methods=["GET"])
 def get_specialities():
-    app.logger.info("Recieved specialities request")
     return utils.get_specialities(mongo)
 
 if __name__ == "__main__":
