@@ -21,7 +21,7 @@ def create_table_students(psql):
 
 def create_table_lessons(psql):
     psql.execute(f"CREATE TYPE lesson_type AS ENUM ('Практика', 'Лекция');")
-    return psql.execute(f"CREATE TABLE {utils.TABLE_LESSONS} (id SERIAL PRIMARY KEY, type lesson_type NOT NULL, course_fk VARCHAR(150) NOT NULL, description_fk VARCHAR(50) NOT NULL );")
+    return psql.execute(f"CREATE TABLE {utils.TABLE_LESSONS} (id SERIAL PRIMARY KEY, type lesson_type NOT NULL, course_fk VARCHAR(120) NOT NULL, description_fk VARCHAR(50) NOT NULL );")
 
 def create_table_schedule(psql):
     return psql.execute(f"CREATE TABLE {utils.TABLE_SCHEDULE}(id SERIAL, group_fk VARCHAR(12) REFERENCES {utils.TABLE_GROUPS} (id) NOT NULL, lesson_fk INT REFERENCES {utils.TABLE_LESSONS} (id) NOT NULL, time TIMESTAMP NOT NULL ) PARTITION BY RANGE (time);")

@@ -1,10 +1,11 @@
-FROM python:3.10.9-slim-bullseye
+FROM golang:1.19
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-RUN pip3 install flask
-RUN pip3 install neo4j
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 
 COPY . .
+RUN go build -v -o / ./...
 
-CMD ["python3", "main.py"]
+CMD ["/neo4j"]
