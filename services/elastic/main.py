@@ -4,6 +4,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from flask import Flask, request
 import logging
+import time
 from urllib.parse import urlparse, parse_qs, unquote
 app = Flask(__name__)
 
@@ -11,84 +12,120 @@ logging.basicConfig(level=logging.DEBUG)
 
 rows = [
     {
+        "name": "Математика",
         "equipment": "учебники",
-        "materials": "Математика. Область знаний, включающая изучение таких тем, как числа (арифметика и теория чисел), формулы и связанные с ними структуры (алгебра), формы и пространства, в которых они содержатся (геометрия), величины и их изменения (исчисление и анализ)",
+        "materials": "Область знаний, включающая изучение таких тем, как числа (арифметика и теория чисел), формулы и связанные с ними структуры (алгебра), формы и пространства, в которых они содержатся (геометрия), величины и их изменения (исчисление и анализ)",
     },
     {
+        "name": "Русский язык",
         "equipment": "учебник",
-        "materials": "Русский язык. Язык восточнославянской группы славянской ветви индоевропейской языковой семьи, национальный язык русского народа.",
+        "materials": "Язык восточнославянской группы славянской ветви индоевропейской языковой семьи, национальный язык русского народа.",
     },
     {
+        "name": "Английский язык",
         "equipment": "учебник",
-        "materials": "Английский язык. Язык англо-фризской подгруппы западной группы германской ветви индоевропейской языковой семьи. ",
+        "materials": "Язык англо-фризской подгруппы западной группы германской ветви индоевропейской языковой семьи. ",
     },
     {
+        "name": "История",
         "equipment": "учебник",
-        "materials": "История. Наука, исследующая прошлое, реальные факты и закономерности смены исторических событий, эволюцию общества и отношений внутри него.",
+        "materials": "Наука, исследующая прошлое, реальные факты и закономерности смены исторических событий, эволюцию общества и отношений внутри него.",
     },
     {
+        "name": "Информатика",
         "equipment": "компьютер",
-        "materials": "Информатика.Наука о методах и процессах сбора, хранения, обработки, передачи, анализа и оценки информации с применением компьютерных технологий, обеспечивающих возможность её использования для принятия решений. ",
+        "materials": "Наука о методах и процессах сбора, хранения, обработки, передачи, анализа и оценки информации с применением компьютерных технологий, обеспечивающих возможность её использования для принятия решений. ",
     },{
+        "name": "Сети",
         "equipment": "провода",
-        "materials": "Сети. Система, обеспечивающая обмен данными между вычислительными устройствами - компьютерами, серверами, маршрутизаторами.",
+        "materials": "Система, обеспечивающая обмен данными между вычислительными устройствами - компьютерами, серверами, маршрутизаторами.",
     },
     {
+        "name": "Труд",
         "equipment": "табуретка",
-        "materials": "Труд. Деятельность человека, направленная на создание материальных и духовных благ, которые удовлетворяют потребности индивида и общества.",
+        "materials": "Деятельность человека, направленная на создание материальных и духовных благ, которые удовлетворяют потребности индивида и общества.",
     },
     {
+        "name": "Физкультура",
         "equipment": "Носки",
-        "materials": "Физкультура. Область социальной деятельности, направленная на сохранение и укрепление здоровья человека в процессе осознанной двигательной активности. ",
+        "materials": "Область социальной деятельности, направленная на сохранение и укрепление здоровья человека в процессе осознанной двигательной активности. ",
     },
     {
+        "name": "Научная деятельность",
         "equipment": "Микроскоп",
-        "materials": "Научная деятельность. совокупность целесообразных, предметно-направленных действий исследователя или группы исследователей по выработке, получению и теоретической систематизации объективных знаний о действительности.",
+        "materials": "Cовокупность целесообразных, предметно-направленных действий исследователя или группы исследователей по выработке, получению и теоретической систематизации объективных знаний о действительности.",
     },
 
 ]
 
 def try_connect():
     try:
-        return Elasticsearch("http://elastic:9200")
+        return Elasticsearch("http://elastic:9200")#, timeout=30, max_retries=10, retry_on_timeout=True)
     except Exception:
         return None
 
+def try_ping(elatis):
+    try:
+        return elastic.ping()
+    except Exception:
+        return False
+
+
+def get_elastic():
+    elastic = Elasticsearch("http://elastic:9200")
+    connected = False
+    while not connected:
+        try:
+            elastic.info()
+            connected = True
+        except ConnectionError:
+            app.logger.info("Elasticsearch not available yet, trying again in 2s...")
+            time.sleep(2)
+
+    return elastic
+
+app.logger.info("Start connecting")
+time.sleep(15)
 elastic = try_connect()
+app.logger.info("Connected to elastic")
+#time.sleep(15)
+
 @app.route("/api/lessons", methods=["GET"])
 def get_lessons():
     keyword = request.args.get('find', type = str)
+
     final_data = []
+    
     if not keyword:
+        app.logger.info(f"keyword = {keyword}")
         body = {'query':{"match_all": {}}}
-        res= elastic.search(index='lesson_descriptions',body=json.dumps(body))
+        res= elastic.search(index='lesson_descriptions', body=json.dumps(body))
         all_hits = res['hits']['hits']
         for num, doc in enumerate(all_hits):
             for value in doc.values():
                 final_data.append(value)
         app.logger.info(final_data)
-    else:
-        body = {
-          "query": {
-            "multi_match" : {
-              "query":  keyword,
-              "fields": [ "equipment", "materials" ]
-            }
-          }}
-        app.logger.info(json.dumps(body, ensure_ascii=False))
-        res = elastic.search(index="lesson_descriptions", body=json.dumps(body, ensure_ascii=False))
-        # body = {'query': {'match': {'materials': 'ex'}}}
-        # res2 = elastic.search(index="lesson_descriptions", body=json.dumps(body))
-        final_data = []
-        all_hits = res['hits']['hits']
-        for num, doc in enumerate(all_hits):
-            for value in doc.values():
-                final_data.append(value)
-        # all_hits = res2['hits']['hits']
-        # for num, doc in enumerate(all_hits):
-        #     for value in doc.values():
-        #         final_data.append(value)
-        app.logger.info(final_data)
+        return final_data
+        
+    body = {
+        "query": {
+        "multi_match" : {
+            "query":  keyword,
+            "fields": [ "equipment", "materials", "name" ]
+        }
+    }}
+    app.logger.info(json.dumps(body, ensure_ascii=False))
+    
+    res = elastic.search(index="lesson_descriptions", body=json.dumps(body, ensure_ascii=False))
+
+    final_data = []
+    all_hits = res['hits']['hits']
+
+    for num, doc in enumerate(all_hits):
+        for value in doc.values():
+            final_data.append(value)
+
+    app.logger.info(final_data)
 
     return final_data
 
@@ -97,19 +134,22 @@ def get_lessons():
     # print("%d documents found" % res['hits']['total'])
     # for doc in res['hits']['hits']:
     #     print("%s) %s" % (doc['_id'], doc['_source']['content']))
-# mappings = {
-#         "properties": {
-#             "equipment": {"type": "text", "analyzer": "standard"},
-#             "materials": {"type": "text", "analyzer": "standard"},
-#     }
-# }
-#
-# elastic.indices.create(index="lesson_descriptions", mappings=mappings)
-# for i, row in enumerate(rows):
-#     doc = {
-#         "equipment": row["equipment"],
-#         "materials": row["materials"],
-#     }
-#     elastic.index(index="lesson_descriptions", id=i, document=doc)
+mappings = {
+        "properties": {
+            "name": {"type": "text", "analyzer": "standard"},
+            "equipment": {"type": "text", "analyzer": "standard"},
+            "materials": {"type": "text", "analyzer": "standard"},
+    }
+}
+
+#elastic.delete_by_query(index="lesson_descriptions", body={"query": {"match_all": {}}})
+elastic.indices.create(index="lesson_descriptions", mappings=mappings)
+for i, row in enumerate(rows):
+    doc = {
+        "name": row["name"],
+        "equipment": row["equipment"],
+        "materials": row["materials"],
+    }
+    elastic.index(index="lesson_descriptions", id=i, document=doc)
 
 app.run(host="0.0.0.0", port=os.environ["LOCAL_SERVICES_PORT"])
