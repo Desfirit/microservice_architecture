@@ -44,13 +44,14 @@ func getStudentInfoHandler(client neo4j.Driver) func(w http.ResponseWriter, r *h
 
 				r, err := tx.Run(`
 			MATCH
-				(s:Student {id: $studentId})-[:member_of]->(g:Group)-[:takes_part_in]->(p:Speciality)-[:belongs_to]->(d:Department)-[:belongs_to]->(i:Institute)
+			(c:Course)<-[:studying]-(s:Student {id: $studentId})-[:member_of]->(g:Group)-[:takes_part_in]->(p:Speciality)-[:belongs_to]->(d:Department)-[:belongs_to]->(i:Institute)
 			RETURN apoc.convert.toJson({
 				student_id: s.id,
 				group_name: g.id,
 				speciality: p.name,
 				department: d.name,
-				institute: i.name
+				institute: i.name,
+				course: c.name
 			})
 			`,
 					map[string]interface{}{"studentId": studentId})
