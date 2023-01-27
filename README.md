@@ -48,7 +48,7 @@ Api доступно по адресу `redis-ma:22808/api/students`.
 Пример: `http://postgres-ma:22808/api/lessons`  
 
 5. `postgres-ma:22808/api/courses`  
-Функционал: предоставляет информацию на каких курсах учится группа
+Функционал: предоставляет информацию на каких курсах учится группа  
 Параметры не нужны  
-Возвращаемый формат: [{"group_fk" : string, "course": int} ... ]  
+Возвращаемый формат: [{"group_fk" : string, "course_fk": int} ... ]  
 Пример: `http://postgres-ma:22808/api/courses`  
