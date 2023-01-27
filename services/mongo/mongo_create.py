@@ -1,13 +1,12 @@
 import copy
 
-def insert_document(mongo, data):
+def insert_document(institutes, data):
     # fill institute
-    institutes = mongo["institutes"]
-
     institutes.insert_one(data)
 
-    current_inst = copy.deepcopy(data)
-    for el in current_inst['department']:
-        del el['specs']
+    #current_inst = copy.deepcopy(data)
+    #for el in current_inst['department']:
+    #    del el['specs']
+
     print(data)
     return

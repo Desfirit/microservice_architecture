@@ -1,5 +1,7 @@
 import os
-from flask import Flask
+from unittest import mock
+from urllib import response
+from flask import Flask, jsonify
 import logging
 import mongo_utils as utils
 import mongo_create as filler
@@ -16,14 +18,42 @@ def load_config(path):
         file = json.load(fp)
         return file
 
+mongo = None
+
+@app.route("/api/all", methods=["GET"])
+def get_all():
+    res = utils.get_all(mongo)
+
+    response = []
+    for inst in res:
+        del inst["_id"]
+        response.append(inst)
+        
+    return response
+
+@app.route("/api/courses", methods=["GET"])
+def get_courses():
+    app.logger.info("Recieved courses request")
+    return utils.get_courses(mongo)
+
+@app.route("/api/specialities", methods=["GET"])
+def get_specialities():
+    app.logger.info("Recieved specialities request")
+    return utils.get_specialities(mongo)
+
 if __name__ == "__main__":
     app.logger.info("Connecting to mongo")
     mongo = utils.get_mongo()
+    mongo.drop_database("mirea-db")
     app.logger.info("Connected to mongo")
 
     app.logger.info("Filling mongo")
+    mongo = mongo["mirea-db"]["institutes"]
+
     for doc in DOCS:
         app.logger.info(f"Created document with id: {filler.insert_document(mongo, load_config(doc))}")
     app.logger.info("Filled mongo")
+
+    #utils.get_institute(mongo, "Институт кибербезопасности и цифровых технологий")
 
     app.run(host="0.0.0.0", port=os.environ["LOCAL_SERVICES_PORT"])
