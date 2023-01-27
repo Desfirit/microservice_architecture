@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 1</title>
+</head>
+<body>
+  <div class="container">
+    {{range .Students}}
+      <div>
+        <div>
+          <strong class="field">Имя студента:</strong> {{.StudentName}}
+        </div>
+        
+        <div>
+          <strong class="field">Фамилия студента:</strong> {{.StudentSurname}}
+        </div>
+
+        <div>
+          <strong class="field">Номер студенческого билета:</strong> {{.StudentId}}
+        </div>
+
+        <div>
+          <strong class="field">Учебная группа:</strong> {{.GroupName}}
+        </div>
+
+        <div>
+          <strong class="field">Специальность:</strong> {{.SpecialityName}}
+        </div>
+
+        <div>
+          <strong class="field">Кафедра:</strong> {{.DepartmentName}}
+        </div>
+
+        <div>
+          <strong class="field">Институт:</strong> {{.InstituteName}}
+        </div>
+
+        <div>
+          <strong class="field">Курс:</strong> {{.Course}}
+        </div>
+
+        <div>
+          <strong class="field">Посещаемость:</strong> {{.VisitPercent}}
+        </div>
+      </div>
+
+      <br><br><br>
+    {{end}}
+  </div>
+</body>
+</html>
