@@ -108,9 +108,7 @@ def get_lessons_from_elastic():
     app.logger.info(f"108) {lessons}")
     res = []
     for lesson in lessons:
-        app.logger.info(f"111) {lesson}")
         if isinstance(lesson, dict):
-            app.logger.info(f"113) {lesson}")
             res.append(lesson["name"])
 
     return res
