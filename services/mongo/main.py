@@ -1,7 +1,7 @@
 import os
 from unittest import mock
 from urllib import response
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import logging
 import mongo_utils as utils
 import mongo_create as filler
@@ -18,6 +18,13 @@ def load_config(path):
         file = json.load(fp)
         return file
 
+def comma_separated_params_to_list(param):
+    result = []
+    for val in param.split(','):
+        if val:
+            result.append(val)
+    return result
+
 mongo = None
 
 @app.route("/api/all", methods=["GET"])
@@ -27,10 +34,28 @@ def get_all():
 
 @app.route("/api/courses", methods=["GET"])
 def get_courses():
+    args = request.args
+
+    if "courses" in args:
+        courses = args.getlist("courses")
+        if len(courses) == 1 and ',' in courses[0]:
+            courses = comma_separated_params_to_list(courses[0])
+
+        utils.find_course(mongo, courses)
+
     return utils.get_courses(mongo)
 
 @app.route("/api/specialities", methods=["GET"])
 def get_specialities():
+    args = request.args
+
+    if "specs" in args:
+        specs = args.getlist("specs")
+        if len(specs) == 1 and ',' in specs[0]:
+            specs = comma_separated_params_to_list(specs[0])
+
+        utils.find_speciality(mongo, specs)
+
     return utils.get_specialities(mongo)
 
 if __name__ == "__main__":

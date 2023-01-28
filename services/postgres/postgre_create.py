@@ -21,7 +21,7 @@ def create_table_students(psql):
 
 def create_table_lessons(psql):
     psql.execute(f"CREATE TYPE lesson_type AS ENUM ('Практика', 'Лекция');")
-    return psql.execute(f"CREATE TABLE {utils.TABLE_LESSONS} (id SERIAL PRIMARY KEY, type lesson_type NOT NULL, course_fk INT NOT NULL, description_fk VARCHAR(50) NOT NULL );")
+    return psql.execute(f"CREATE TABLE {utils.TABLE_LESSONS} (id SERIAL PRIMARY KEY, type lesson_type NOT NULL, course_fk VARCHAR(100) NOT NULL, description_fk VARCHAR(50) NOT NULL );")
 
 def create_table_schedule(psql):
     return psql.execute(f"CREATE TABLE {utils.TABLE_SCHEDULE}(id SERIAL, group_fk VARCHAR(12) REFERENCES {utils.TABLE_GROUPS} (id) NOT NULL, lesson_fk INT REFERENCES {utils.TABLE_LESSONS} (id) NOT NULL, time TIMESTAMP NOT NULL ) PARTITION BY RANGE (time);")
@@ -83,14 +83,14 @@ def shood_add_group():
 def shood_add(prob):
     return random.random() < prob
 
-def insert_group(psql, indx, group):
-    return psql.execute(f"INSERT INTO {utils.TABLE_GROUPS}(id, speciality_fk) VALUES ('{group}', '{indx}');")
+def insert_group(psql, group, spec):
+    return psql.execute(f"INSERT INTO {utils.TABLE_GROUPS}(id, speciality_fk) VALUES ('{group}', '{spec}');")
 
 def insert_student(psql, studentId, studentName, studentSurname, group):
     return psql.execute(f"INSERT INTO {utils.TABLE_STUDENTS}(id, name, surname, group_fk) VALUES ('{studentId}', '{studentName}', '{studentSurname}', '{group}');")
 
 def insert_lesson(psql, name, type, courseId):
-    return psql.execute(f"INSERT INTO {utils.TABLE_LESSONS}(description_fk, type, course_fk) VALUES ('{name}', '{type}', {courseId});")
+    return psql.execute(f"INSERT INTO {utils.TABLE_LESSONS}(description_fk, type, course_fk) VALUES ('{name}', '{type}', '{courseId}');")
 
 def insert_schedule(psql, group, lesson, time):
     return psql.execute(f"INSERT INTO {utils.TABLE_SCHEDULE}(group_fk, lesson_fk, time) VALUES('{group}', {lesson}, '{time}');")
@@ -106,7 +106,7 @@ def fill_day(psql, day, group, lessons):
 
         lesson = random.choice(lessons)
 
-        insert_schedule(psql, group, lesson, day + lessonTime)
+        insert_schedule(psql, group, lesson["id"], day + lessonTime)
 
 def fill_week(psql, week, group, lessons):
     currentDay = week
@@ -115,13 +115,13 @@ def fill_week(psql, week, group, lessons):
         fill_day(psql, currentDay, group, lessons)
         currentDay += DAY_DELTA
 
-def fill_schedule(psql, group):
+def fill_schedule(psql, group, lessons):
     currentWeek = START_SEMESTER_WEEK
 
     for i in range(WEEKS_TO_FILL):
-        #lessons = random.choices(LESSONS, k=5)
-        lessons = random.choices(range(1, len(LESSONS)+1), k=3)
-        fill_week(psql, currentWeek, group, lessons)
+        lesson = random.choices(lessons, k=5)
+        #lessons = random.choices(range(1, len(LESSONS)+1), k=3)
+        fill_week(psql, currentWeek, group, lesson)
 
         currentWeek += WEEK_DELTA
 
@@ -130,24 +130,26 @@ def fill_visits(psql, schedl):
         insert_visit(psql, schedl["id"], student["id"], shood_add(0.8))
 
 
-def fill_scheme(postgre):
+def fill_scheme(postgre, specialitites, courses, lessons_descriptions):
     generate_data()
 
-    for indxGroup, group in enumerate(GROUPS):
-        insert_group(postgre, indxGroup, group)
+    for group in GROUPS:
+        insert_group(postgre, group, random.choice(specialitites))
 
     for student in STUDENTS:
         insert_student(postgre, student["id"], student["name"], student["surname"], student["group"])
 
-    for indxLes, lesson in enumerate(LESSONS):
-        insert_lesson(postgre, lesson, "Лекция" if shood_add(0.5) else "Практика", indxLes)
+    for lesson in lessons_descriptions:
+        insert_lesson(postgre, lesson, "Лекция" if shood_add(0.5) else "Практика", random.choice(courses))
+
+    lessons = utils.get_lessons(postgre)
     
     #Filling schedule
     for group in GROUPS:
         if not shood_add(0.3):
             continue    
 
-        fill_schedule(postgre, group)
+        fill_schedule(postgre, group, lessons)
 
     #Filling visits
     schedule = utils.get_schedule(postgre)

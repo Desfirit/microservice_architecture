@@ -4,6 +4,9 @@ import postgre_utils as utils
 import postgre_create as create_utils
 import logging
 import datetime
+import requests
+import json
+import time
 
 app = Flask(__name__)
 
@@ -60,13 +63,75 @@ def is_scheme_created(postgre):
     else:
         return False
 
+def try_fetch(url):
+    while True:
+        app.logger.info(f"Fetching {url} ...")
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                app.logger.info(f"Fetching {url} successded!")
+                return response
+        except Exception:
+            app.logger.info(f"Fetching {url} failed")
+        time.sleep(0.5)
+
+def get_courses_from_mongo():
+    response = try_fetch("http://mongo-ma:22808/api/courses")
+    insts = response.json()
+
+    courses = []
+    for deps in insts:
+        for dep in deps["department"]:
+            for course in dep["courses"]:
+                name = course["name"]
+                courses.append(name)
+                   
+    return courses
+
+def get_specialities_from_mongo():
+    response = try_fetch("http://mongo-ma:22808/api/specialities")
+    insts = response.json()
+
+    specs = []
+    for deps in insts:
+        for dep in deps["department"]:
+            for spec in dep["specs"]:
+                name = spec["name"]
+                specs.append(name)
+
+    return specs
+
+def get_lessons_from_elastic():
+    response = try_fetch("http://elastic-ma:22808/api/lessons")
+    lessons = response.json()
+
+    app.logger.info(f"108) {lessons}")
+    res = []
+    for lesson in lessons:
+        app.logger.info(f"111) {lesson}")
+        if isinstance(lesson, dict):
+            app.logger.info(f"113) {lesson}")
+            res.append(lesson["name"])
+
+    return res
+
 def prepare_database(postgre):
+
+    courses = get_courses_from_mongo()
+
+    specs = get_specialities_from_mongo()
+
+    get_lessons_from_elastic()
+    time.sleep(1)
+    lessons = get_lessons_from_elastic()
+    app.logger.info(lessons)
+
     app.logger.info("Creating scheme")
     create_utils.create_scheme(postgre)
     app.logger.info("Created scheme")
 
     app.logger.info("Filling database")
-    create_utils.fill_scheme(postgre)
+    create_utils.fill_scheme(postgre, specs, courses, lessons)
     app.logger.info("Filled database")
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ CREATE TABLE lessons
 (
     id SERIAL PRIMARY KEY,
     type lesson_type NOT NULL,
-    course_fk INT NOT NULL,
+    course_fk VARCHAR(100) NOT NULL,
     description_fk VARCHAR(50) NOT NULL
 );
 
