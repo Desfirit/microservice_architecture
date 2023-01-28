@@ -58,37 +58,10 @@ rows = [
 
 ]
 
-def try_connect():
-    try:
-        return Elasticsearch("http://elastic:9200")#, timeout=30, max_retries=10, retry_on_timeout=True)
-    except Exception:
-        return None
-
-def try_ping(elatis):
-    try:
-        return elastic.ping()
-    except Exception:
-        return False
-
-
-def get_elastic():
-    elastic = Elasticsearch("http://elastic:9200")
-    connected = False
-    while not connected:
-        try:
-            elastic.info()
-            connected = True
-        except ConnectionError:
-            app.logger.info("Elasticsearch not available yet, trying again in 2s...")
-            time.sleep(2)
-
-    return elastic
-
 app.logger.info("Start connecting")
 time.sleep(15)
-elastic = try_connect()
+elastic = Elasticsearch("http://elastic:9200")
 app.logger.info("Connected to elastic")
-#time.sleep(15)
 
 @app.route("/api/lessons", methods=["GET"])
 def get_lessons():
@@ -106,11 +79,11 @@ def get_lessons():
                 final_data.append(value)
         app.logger.info(final_data)
         return final_data
-        
+
     body = {
         "query": {
         "multi_match" : {
-            "query":  keyword,
+            "query":  unquote(keyword),
             "fields": [ "equipment", "materials", "name" ]
         }
     }}
@@ -120,6 +93,8 @@ def get_lessons():
 
     final_data = []
     all_hits = res['hits']['hits']
+
+    app.logger.info(all_hits)
 
     for num, doc in enumerate(all_hits):
         for value in doc.values():
