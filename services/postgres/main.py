@@ -52,7 +52,21 @@ def get_lessons():
 
 @app.route("/api/courses", methods=["GET"])
 def get_courses():
-    return utils.get_courses(postgre)
+    groupsToCourses = utils.get_courses(postgre)
+    mappedGroups = dict()
+
+    for groupToCourse in groupsToCourses:
+        group = groupToCourse["group_fk"]
+        course = groupToCourse["course_fk"]
+        if course not in mappedGroups:
+            mappedGroups[course] = []
+        mappedGroups[course].append(group)
+
+    res = []
+    for key, val in mappedGroups.items():
+        res.append({"name": key, "groups": val})
+
+    return res
 
 def is_scheme_created(postgre):
     postgre.execute("SELECT * FROM information_schema.tables WHERE table_name = 'groups';")
