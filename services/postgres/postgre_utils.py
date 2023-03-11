@@ -1,4 +1,6 @@
+import json
 import os
+import requests
 import psycopg2
 import time
 
@@ -61,3 +63,20 @@ def find_worst_students(postgre, lections, start_date, end_date):
 
     students = [dict((postgre.description[i][0], value) for i, value in enumerate(row)) for row in postgre.fetchall()]
     return students
+
+def initialize_kafka_connector():
+    config_file = open("kafka_connector_config.json")
+
+    config_data = json.load(config_file)
+
+    config_data["config"]["database.user"] = os.environ["POSTGRE_USER"]
+    config_data["config"]["database.password"] = os.environ["POSTGRE_PASS"]
+    config_data["config"]["database.dbname"] = os.environ["POSTGRE_DBNAME"]
+
+    config_file.close()
+
+    connection_url = 'http://kafka-connector:${kafka_port}/connectors/'.format(kafka_port = os.environ["KAFKA_DEFAULT_PORT"])
+
+    x = requests.post(connection_url, headers={"Content-Type": "application/json"}, json=config_data)
+
+    return x.status_code == 200

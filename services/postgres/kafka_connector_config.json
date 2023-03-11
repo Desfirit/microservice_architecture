@@ -1,0 +1,17 @@
+{
+  "name": "pg-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "plugin.name": "pgoutput",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.server.name": "pg",
+    "heartbeat.interval.ms": "5000",
+    "slot.name": "dbname_debezium",
+    "publication.name": "dbname_publication",
+    "transforms": "AddPrefix",
+    "transforms.AddPrefix.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.AddPrefix.regex": "pg.(.*)",
+    "transforms.AddPrefix.replacement": "data.cdc.dbname"
+  }
+}
